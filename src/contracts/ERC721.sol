@@ -14,7 +14,7 @@ contract ERC721 {
     //Mapping from token id to the owner
     mapping(uint256 => address) private _tokenOwner;
     //Mapping from owner to number of owned token
-    mapping(addess => uint256) private _OwnedTokensCount;
+    mapping(address => uint256) private _OwnedTokensCount;
 
     function _exists(uint256 tokenId) internal view returns(bool) {
         //setting the address nft owner to check the mapping of the address from tokenOwner at the tokenId
