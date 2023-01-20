@@ -23,7 +23,7 @@ contract ERC721 {
         return owner != address(0);
     }
 
-    function _mint(address to, uint256 tokenId) internal {
+    function _mint(address to, uint256 tokenId) internal virtual {
         //requires that the address is not zero
         require(to != address(0), 'ERC7621: minting to the zero address');
         //requires the token does not already exist
@@ -35,11 +35,21 @@ contract ERC721 {
         emit Transfer(address(0), to, tokenId);
     }
 
+    /// @notice Count all NFTs assigned to an owner
+    /// @dev NFTs assigned to the zero address are considered invalid, and this
+    ///  function throws for queries about the zero address.
+    /// @param owner An address for whom to query the balance
+    /// @return The number of NFTs owned by `_owner`, possibly zero
     function balanceOf(address owner) public view returns (uint256) {
         require(owner != address(0), 'owner query for non-existing address');
         return _OwnedTokensCount[owner];
     }
 
+    /// @notice Find the owner of an NFT
+    /// @dev NFTs assigned to zero address are considered invalid, and queries
+    ///  about them do throw.
+    /// @param tokenId The identifier for an NFT
+    /// @return The address of the owner of the NFT
     function ownerOf(uint256 tokenId) public view returns (address) {
         require(_exists(tokenId), 'token does not exists');
         require(_tokenOwner[tokenId]!= address(0), 'owner query for non-existing address');
