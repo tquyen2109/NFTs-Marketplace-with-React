@@ -12,9 +12,7 @@ contract ERC721Enumerable is ERC721 {
     //mapping from token ID index of te owner tokens list
     mapping(uint256 => uint256) private _ownedTokensIndex;
     //return total supply of the _allTokens array
-    function totalSupply() external view returns (uint256) {
-        return _allTokens.length;
-    }
+
 
     function tokenByIndex(uint256 index) external view returns (uint256) {
         require(index < totalSupply(), 'global index is out of bound');
@@ -22,6 +20,7 @@ contract ERC721Enumerable is ERC721 {
     }
 
     function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256) {
+        require(index < balanceOf(owner), 'owner index is out of bound');
         return _ownedTokens[owner][index];
     }
 
@@ -39,11 +38,15 @@ contract ERC721Enumerable is ERC721 {
         _allTokens.push(tokenId);
     }
 
-    function _addTokenToOwnerEnumeration(uint256 tokenId, address to) {
+    function _addTokenToOwnerEnumeration(uint256 tokenId, address to) private {
         //add address and tokenId to the _ownedTokens
         //_ownedTokensIndex tokenId set to the address of ownedTokens position
         //execute the function with minting
         _ownedTokensIndex[tokenId] = _ownedTokens[to].length;
         _ownedTokens[to].push(tokenId);
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return _allTokens.length;
     }
 }

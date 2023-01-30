@@ -15,6 +15,8 @@ contract ERC721 {
     mapping(uint256 => address) private _tokenOwner;
     //Mapping from owner to number of owned token
     mapping(address => uint256) private _OwnedTokensCount;
+    //Mapping from token id to approved addresses
+    mapping(uint256 => address) private _tokenApprovals;
 
     function _exists(uint256 tokenId) internal view returns (bool) {
         //setting the address nft owner to check the mapping of the address from tokenOwner at the tokenId
@@ -35,6 +37,22 @@ contract ERC721 {
         emit Transfer(address(0), to, tokenId);
     }
 
+    function _transferFrom(address from, address to, uint256 tokenId) internal {
+        require(to != address(0), 'ERC721: Error - Transfer to the zero address');
+        require(ownerOf(tokenId) == from, 'Trying to transfer a token the address does not own');
+        //update token owner mapping
+        _tokenOwner[tokenId] = to;
+        //update from address token balance
+        _OwnedTokensCount[from] = _OwnedTokensCount[from] - 1;
+        //update to address token balance
+        _OwnedTokensCount[to] = _OwnedTokensCount[to] + 1;
+        emit Transfer(from, to, tokenId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId) public {
+        _transferFrom(from, to, tokenId);
+    }
+
     /// @notice Count all NFTs assigned to an owner
     /// @dev NFTs assigned to the zero address are considered invalid, and this
     ///  function throws for queries about the zero address.
@@ -52,7 +70,8 @@ contract ERC721 {
     /// @return The address of the owner of the NFT
     function ownerOf(uint256 tokenId) public view returns (address) {
         require(_exists(tokenId), 'token does not exists');
-        require(_tokenOwner[tokenId]!= address(0), 'owner query for non-existing address');
+        require(_tokenOwner[tokenId] != address(0), 'owner query for non-existing address');
         return _tokenOwner[tokenId];
     }
+
 }
