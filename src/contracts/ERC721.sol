@@ -1,18 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.8;
+pragma solidity ^0.8.0;
 
-import ".\interfaces\IERC165.sol";
-import ".\ERC165.sol";
+import "./ERC165.sol";
+import "./interfaces/IERC721.sol";
 
-// Building minting function
-// a. nft to point to an address
-// b. keep track of the token ids
-// c. keep track of token owner addresses to token ids
-// d. keep track of how many tokens an owner address has
-// e. create an event that emits a transfer log - contract address, where it being minted to, the id
-contract ERC721 is ERC165 {
-    //logging event
-    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+contract ERC721 is ERC165, IERC721 {
 
     //Mapping from token id to the owner
     mapping(uint256 => address) private _tokenOwner;
@@ -20,6 +12,10 @@ contract ERC721 is ERC165 {
     mapping(address => uint256) private _OwnedTokensCount;
     //Mapping from token id to approved addresses
     mapping(uint256 => address) private _tokenApprovals;
+
+    constructor() {
+        _registerInterface(bytes4(keccak256('balanceOf(bytes4)')^keccak256('ownerOf(bytes4)')^keccak256('balanceOf(bytes4)')));
+    }
 
     function _exists(uint256 tokenId) internal view returns (bool) {
         //setting the address nft owner to check the mapping of the address from tokenOwner at the tokenId
@@ -52,7 +48,7 @@ contract ERC721 is ERC165 {
         emit Transfer(from, to, tokenId);
     }
 
-    function transferFrom(address from, address to, uint256 tokenId) public {
+    function transferFrom(address from, address to, uint256 tokenId) public override {
         _transferFrom(from, to, tokenId);
     }
 
@@ -61,7 +57,7 @@ contract ERC721 is ERC165 {
     ///  function throws for queries about the zero address.
     /// @param owner An address for whom to query the balance
     /// @return The number of NFTs owned by `_owner`, possibly zero
-    function balanceOf(address owner) public view returns (uint256) {
+    function balanceOf(address owner) public view override returns (uint256) {
         require(owner != address(0), 'owner query for non-existing address');
         return _OwnedTokensCount[owner];
     }
@@ -71,7 +67,7 @@ contract ERC721 is ERC165 {
     ///  about them do throw.
     /// @param tokenId The identifier for an NFT
     /// @return The address of the owner of the NFT
-    function ownerOf(uint256 tokenId) public view returns (address) {
+    function ownerOf(uint256 tokenId) public view override returns (address) {
         require(_exists(tokenId), 'token does not exists');
         require(_tokenOwner[tokenId] != address(0), 'owner query for non-existing address');
         return _tokenOwner[tokenId];
