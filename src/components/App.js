@@ -56,17 +56,11 @@ export default class App extends Component {
 
         // When calling functions using ethers.js, you can call them directly
         // The below example calls totalSupply, directly under the contractRead object
+        await this.updateTotalSupply();
 
-        let getTotalSupply = await this.state.contractRead.totalSupply();
-        getTotalSupply = ethers.utils.formatUnits(getTotalSupply, 0);
+        for(let i = 1; i <= this.state.totalSupply; i++) {
 
-        this.setState({
-            totalSupply: getTotalSupply
-        });
-
-        for(let i = 0; i < getTotalSupply; i++) {
-
-            const KryptoBird = await this.state.contractRead.kryptoBirdz(i - 0);
+            const KryptoBird = await this.state.contractRead.kryptoBirdz(i - 1);
 
             this.setState({
                 kryptoBirdz:[...this.state.kryptoBirdz, KryptoBird]
@@ -74,10 +68,43 @@ export default class App extends Component {
         }
     };
 
+    async mint(kryptoBird){
+        try {
+            const txResponse = await this.state.contractSign.mint(kryptoBird);
+            const txReceipt = await txResponse.wait();
+
+            console.log('Data: ', txReceipt.events);
+            const KryptoBird = await this.state.contractRead.kryptoBirdz(this.state.kryptoBirdz.length);
+
+            this.setState({
+                kryptoBirdz:[...this.state.kryptoBirdz, KryptoBird]
+            });
+            await this.updateTotalSupply();
+            console.log(this.state.kryptoBirdz);
+
+        } catch (error) {
+            console.log(error.message);
+        };
+    }
+
+
+    async updateTotalSupply() {
+        let getTotalSupply = await this.state.contractRead.totalSupply();
+        getTotalSupply = parseInt(ethers.utils.formatUnits(getTotalSupply, 0), 10);
+
+        this.setState({
+            totalSupply: getTotalSupply
+        });
+    }
+
     constructor(props) {
         super(props);
         this.state = {
-            account: ''
+            account: '',
+            contractRead: null,
+            contractSign: null,
+            totalSupply: 0,
+            kryptoBirdz: []
         }
     }
     render() {
@@ -93,7 +120,23 @@ export default class App extends Component {
                         </li>
                     </ul>
                 </nav>
-                <h1>NFT Marketplace</h1>
+                <div className={'container-fluid mt-1'}>
+                    <div className={'row'}>
+                        <main role={'main'} className={'col-lg-12 d-flex text-center'}>
+                            <div className={'content mr-auto ml-auto'} style={{opacity: '0.8'}}>
+                                <h1 style={{color: "white"}}>KryptoBirdz - NFT Marketplace</h1>
+                                <form onSubmit={(event) =>{
+                                    event.preventDefault();
+                                    const kryptoBird = this.kryptoBird.value;
+                                    this.mint(kryptoBird);
+                                }}>
+                                    <input type="text" placeholder={'Add a file location'} className={'form-control mb-1'} ref={(input)=> {this.kryptoBird = input}}/>
+                                    <input type="submit" value={'MINT'} className={'btn btn-primary btn-black'}/>
+                                </form>
+                            </div>
+                        </main>
+                    </div>
+                </div>
             </div>
         )
     }
